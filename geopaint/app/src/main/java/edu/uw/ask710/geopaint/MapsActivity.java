@@ -2,8 +2,11 @@ package edu.uw.ask710.geopaint;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -28,6 +31,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 public class  MapsActivity extends AppCompatActivity implements
         OnMapReadyCallback,
@@ -38,8 +42,12 @@ public class  MapsActivity extends AppCompatActivity implements
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest locationRequest;
+    private PolylineOptions polyline;
+    private SharedPreferences sharedPreferences;
     public static final String TAG = "MapsActivity";
     private static final int LOCATION_REQUEST_CODE = 1;
+    public static final String PREF_PEN_KEY = "pref_pen";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +55,15 @@ public class  MapsActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_maps);
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        if(!sharedPreferences.getBoolean(PREF_PEN_KEY, false)){
+            sharedPreferences.edit().putBoolean(PREF_PEN_KEY, false);
+            polyline = new PolylineOptions()
+                    .width(25)
+                    .color(Color.BLUE);
+        }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         if(mGoogleApiClient == null){
@@ -60,6 +77,7 @@ public class  MapsActivity extends AppCompatActivity implements
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        mapFragment.setRetainInstance(true);
         mapFragment.getMapAsync(this);
     }
 
@@ -82,6 +100,9 @@ public class  MapsActivity extends AppCompatActivity implements
 
     @Override
     protected void onStart() {
+        polyline = new PolylineOptions()
+                .width(25)
+                .color(Color.BLUE);
         mGoogleApiClient.connect();
         super.onStart();
     }
@@ -118,6 +139,7 @@ public class  MapsActivity extends AppCompatActivity implements
         locationRequest.setFastestInterval(5000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
+
         int locationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if(locationPermission == PackageManager.PERMISSION_GRANTED){
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
@@ -143,12 +165,21 @@ public class  MapsActivity extends AppCompatActivity implements
             double lng = location.getLongitude();
             Log.v(TAG, "latitude: " + lat + ", longitude: " + lng);
             LatLng latLng = new LatLng(lat, lng);
-            MarkerOptions options = new MarkerOptions()
-                    .position(latLng)
-                    .title("Current Location");
-            mMap.addMarker(options);
+//            MarkerOptions options = new MarkerOptions()
+//                    .position(latLng)
+//                    .title("Current Location");
+//            mMap.addMarker(options);
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+
+            if(sharedPreferences.getBoolean(PREF_PEN_KEY, true)) {
+                polyline.add(latLng);
+                mMap.addPolyline(polyline);
+            }
         }
+    }
+
+    public void draw(){
+
     }
 
     @Override
