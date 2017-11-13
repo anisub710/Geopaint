@@ -9,9 +9,16 @@
     />
     <!--add color and sharing-->
 
-    <Preference
-        android:title="Choose color"
-        android:key="pref_color"
-    />
+    <!--<PreferenceCategory-->
+        <!--android:title="Color">-->
+        <com.flask.colorpicker.ColorPickerPreference
+            android:key="pref_color"
+            android:title="Pen Color"
+            app:alphaSlider="true"
+            app:density="12"
+            app:initialColor="0xffff0000"
+            app:lightnessSlider="true"
+            />
+    <!--</PreferenceCategory>-->
 
 </PreferenceScreen>

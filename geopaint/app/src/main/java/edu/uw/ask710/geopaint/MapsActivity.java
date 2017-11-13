@@ -47,6 +47,7 @@ public class  MapsActivity extends AppCompatActivity implements
     public static final String TAG = "MapsActivity";
     private static final int LOCATION_REQUEST_CODE = 1;
     public static final String PREF_PEN_KEY = "pref_pen";
+    public static final String CHOSEN_COLOR = "chosen_color";
 
 
     @Override
@@ -58,11 +59,13 @@ public class  MapsActivity extends AppCompatActivity implements
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+
         if(!sharedPreferences.getBoolean(PREF_PEN_KEY, false)){
             sharedPreferences.edit().putBoolean(PREF_PEN_KEY, false);
             polyline = new PolylineOptions()
                     .width(25)
-                    .color(Color.BLUE);
+                    .color(sharedPreferences.getInt(CHOSEN_COLOR, Color.BLUE));
+
         }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -102,7 +105,7 @@ public class  MapsActivity extends AppCompatActivity implements
     protected void onStart() {
         polyline = new PolylineOptions()
                 .width(25)
-                .color(Color.BLUE);
+                .color(sharedPreferences.getInt(CHOSEN_COLOR, Color.BLUE));
         mGoogleApiClient.connect();
         super.onStart();
     }
