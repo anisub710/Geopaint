@@ -1,6 +1,7 @@
 package edu.uw.ask710.geopaint;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -13,11 +14,14 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -31,7 +35,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class  MapsActivity extends AppCompatActivity implements
         OnMapReadyCallback,
@@ -44,10 +52,15 @@ public class  MapsActivity extends AppCompatActivity implements
     private LocationRequest locationRequest;
     private PolylineOptions polyline;
     private SharedPreferences sharedPreferences;
+    private GeoJsonConverter converter;
+    private List<Polyline> polylineList;
     public static final String TAG = "MapsActivity";
     private static final int LOCATION_REQUEST_CODE = 1;
+    private String fileName;
     public static final String PREF_PEN_KEY = "pref_pen";
     public static final String CHOSEN_COLOR = "chosen_color";
+    public static final String PREF_FILE_KEY = "pref_file";
+    public static final String CONVERTED_KEY = "converted";
 
 
     @Override
@@ -57,8 +70,32 @@ public class  MapsActivity extends AppCompatActivity implements
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
 
+        polylineList = new ArrayList<Polyline>();
+
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+        if(sharedPreferences.getString(PREF_FILE_KEY, null) == null){
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Enter file name to store this art: ");
+            final EditText input = new EditText(this);
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+            builder.setView(input);
+            builder.setPositiveButton("SAVE", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    fileName = input.getText().toString();
+                    sharedPreferences.edit().putString(PREF_FILE_KEY, fileName).commit();
+                    Log.v(TAG, "This is the file name: " + fileName);
+                }
+            });
+            builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            builder.show();
+        }
 
         if(!sharedPreferences.getBoolean(PREF_PEN_KEY, false)){
             sharedPreferences.edit().putBoolean(PREF_PEN_KEY, false);
@@ -176,7 +213,15 @@ public class  MapsActivity extends AppCompatActivity implements
 
             if(sharedPreferences.getBoolean(PREF_PEN_KEY, true)) {
                 polyline.add(latLng);
-                mMap.addPolyline(polyline);
+                Polyline line = mMap.addPolyline(polyline);
+                if(polylineList != null){
+                    polylineList.clear();
+                }
+                polylineList.add(line);
+                String converted = converter.convertToGeoJson(polylineList);
+                Intent intent = new Intent(MapsActivity.this, MapSavingService.class);
+                intent.putExtra(CONVERTED_KEY, converted);
+                startService(intent);
             }
         }
     }
