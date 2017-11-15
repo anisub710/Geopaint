@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,8 +15,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.Log;
@@ -38,6 +41,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.json.JSONException;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +69,9 @@ public class  MapsActivity extends AppCompatActivity implements
     public static final String TAG = "MapsActivity";
     private static final int LOCATION_REQUEST_CODE = 1;
     private String fileName;
+    private String geojson;
+    private List<PolylineOptions> resultList;
+//    private PolylineOptions old;
     public static final String PREF_PEN_KEY = "pref_pen";
     public static final String CHOSEN_COLOR = "chosen_color";
     public static final String PREF_FILE_KEY = "pref_file";
@@ -95,15 +110,44 @@ public class  MapsActivity extends AppCompatActivity implements
                 }
             });
             builder.show();
+        }else{
+            Uri getFile = Uri.fromFile(new File(getExternalFilesDir(null).getAbsolutePath() +
+                    File.separator + sharedPreferences.getString(PREF_FILE_KEY, null) + ".geojson"));
+            File read = new File(getFile.getPath());
+            try{
+                FileInputStream inputStream = new FileInputStream(new File(read.getAbsolutePath()));
+                if(inputStream != null){
+                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    String result = "";
+                    StringBuilder stringBuilder = new StringBuilder();
+                    while((result = bufferedReader.readLine()) != null){
+                        stringBuilder.append(result);
+                    }
+                    inputStream.close();
+                    geojson = stringBuilder.toString();
+                    Log.v(TAG, "I'm here: " + geojson);
+                    resultList = converter.convertFromGeoJson(geojson);
+//                    old = resultList.get(0);
+//                    Log.v(TAG, "This is the geojson: " + resultList.get(0));
+                }
+            }catch(FileNotFoundException e){
+                Log.d(TAG, "File not found: " + e.toString());
+            }catch(IOException ioe){
+                Log.d(TAG, Log.getStackTraceString(ioe));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
 
         if(!sharedPreferences.getBoolean(PREF_PEN_KEY, false)){
             sharedPreferences.edit().putBoolean(PREF_PEN_KEY, false);
-            polyline = new PolylineOptions()
-                    .width(25)
-                    .color(sharedPreferences.getInt(CHOSEN_COLOR, Color.BLUE));
-
+//            polyline = new PolylineOptions()
+//                    .width(25)
+//                    .color(sharedPreferences.getInt(CHOSEN_COLOR, Color.BLUE));
         }
+
+
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         if(mGoogleApiClient == null){
@@ -135,14 +179,20 @@ public class  MapsActivity extends AppCompatActivity implements
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
-
+        if(resultList != null){
+            for(int i = 0; i < resultList.size(); i++){
+                PolylineOptions old = resultList.get(i);
+                Log.v(TAG, "Old polyline: "  + old);
+                mMap.addPolyline(old);
+            }
+        }
     }
 
     @Override
     protected void onStart() {
-        polyline = new PolylineOptions()
-                .width(25)
-                .color(sharedPreferences.getInt(CHOSEN_COLOR, Color.BLUE));
+//        polyline = new PolylineOptions()
+//                .width(25)
+//                .color(sharedPreferences.getInt(CHOSEN_COLOR, Color.BLUE));
         mGoogleApiClient.connect();
         super.onStart();
     }
@@ -156,6 +206,15 @@ public class  MapsActivity extends AppCompatActivity implements
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
+
+        MenuItem shareItem = menu.findItem(R.id.action_share);
+        ShareActionProvider mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+        Intent myShareIntent = new Intent(Intent.ACTION_SEND);
+        myShareIntent.setType("text/plain");
+        Uri shareFile = Uri.fromFile(new File(getExternalFilesDir(null).getAbsolutePath() +
+                File.separator + sharedPreferences.getString(PREF_FILE_KEY, null) + ".geojson"));
+        myShareIntent.putExtra(Intent.EXTRA_STREAM, shareFile);
+        mShareActionProvider.setShareIntent(myShareIntent);
         return true;
     }
 
@@ -212,12 +271,18 @@ public class  MapsActivity extends AppCompatActivity implements
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
             if(sharedPreferences.getBoolean(PREF_PEN_KEY, true)) {
+                if(polyline == null){
+                    polyline = new PolylineOptions()
+                            .width(25)
+                            .color(sharedPreferences.getInt(CHOSEN_COLOR, Color.BLUE));
+                }
                 polyline.add(latLng);
                 Polyline line = mMap.addPolyline(polyline);
                 if(polylineList != null){
                     polylineList.clear();
                 }
                 polylineList.add(line);
+                Log.v(TAG, "List size: " + polylineList.size());
                 String converted = converter.convertToGeoJson(polylineList);
                 Intent intent = new Intent(MapsActivity.this, MapSavingService.class);
                 intent.putExtra(CONVERTED_KEY, converted);

@@ -12,6 +12,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.io.File;
@@ -53,6 +55,7 @@ public class MapSavingService extends IntentService {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String saveFile = sharedPreferences.getString(MapsActivity.PREF_FILE_KEY, null) + ".geojson";
         String converted = intent.getStringExtra(MapsActivity.CONVERTED_KEY);
+
 //        Log.v(TAG, "Here is the converted GEOJSON: " + converted);
 //        Log.v(TAG, "Here is the file name " + saveFile);
 
@@ -76,6 +79,9 @@ public class MapSavingService extends IntentService {
                 dir.mkdirs();
             }
             File file = new File(dir, saveFile);
+            if(file.exists()){
+                file.delete();
+            }
             PrintWriter out = new PrintWriter(new FileWriter(file, true));
             out.println(converted);
             out.close();
