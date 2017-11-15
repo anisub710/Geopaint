@@ -9,4 +9,8 @@
         android:title="Share"
         app:showAsAction="ifRoom"
         app:actionProviderClass="android.support.v7.widget.ShareActionProvider"/>
+
+    <item android:id="@+id/toggle_pen"
+        android:title="Toggle Pen"
+        app:showAsAction="ifRoom"/>
 </menu>

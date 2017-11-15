@@ -2,11 +2,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <CheckBoxPreference android:key="pref_pen"
-        android:title="Lower Pen"
-        android:defaultValue="false"
-        android:summary="Select to create a new polyline"
-    />
+    <!--<CheckBoxPreference android:key="pref_pen"-->
+        <!--android:title="Lower Pen"-->
+        <!--android:defaultValue="false"-->
+        <!--android:summary="Select to create a new polyline"-->
+    <!--/>-->
 
     <EditTextPreference android:key="pref_file"
         android:title="File name to store the art"
@@ -20,7 +20,7 @@
             android:title="Pen Color"
             app:alphaSlider="true"
             app:density="12"
-            app:initialColor="0xffff0000"
+            app:initialColor= "@color/colorDefault"
             app:lightnessSlider="true"
             />
     <!--</PreferenceCategory>-->

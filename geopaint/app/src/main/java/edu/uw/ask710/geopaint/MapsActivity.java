@@ -70,9 +70,10 @@ public class  MapsActivity extends AppCompatActivity implements
     private static final int LOCATION_REQUEST_CODE = 1;
     private String fileName;
     private String geojson;
+    private boolean penDown = false;
     private List<PolylineOptions> resultList;
 //    private PolylineOptions old;
-    public static final String PREF_PEN_KEY = "pref_pen";
+//    public static final String PREF_PEN_KEY = "pref_pen";
     public static final String CHOSEN_COLOR = "chosen_color";
     public static final String PREF_FILE_KEY = "pref_file";
     public static final String CONVERTED_KEY = "converted";
@@ -140,12 +141,12 @@ public class  MapsActivity extends AppCompatActivity implements
             }
         }
 
-        if(!sharedPreferences.getBoolean(PREF_PEN_KEY, false)){
-            sharedPreferences.edit().putBoolean(PREF_PEN_KEY, false);
-//            polyline = new PolylineOptions()
-//                    .width(25)
-//                    .color(sharedPreferences.getInt(CHOSEN_COLOR, Color.BLUE));
-        }
+//        if(!sharedPreferences.getBoolean(PREF_PEN_KEY, false)){
+//            sharedPreferences.edit().putBoolean(PREF_PEN_KEY, false);
+////            polyline = new PolylineOptions()
+////                    .width(25)
+////                    .color(sharedPreferences.getInt(CHOSEN_COLOR, Color.BLUE));
+//        }
 
 
 
@@ -225,6 +226,18 @@ public class  MapsActivity extends AppCompatActivity implements
                 startActivity(new Intent(MapsActivity.this, SettingsActivity.class));
                 return true;
 
+            case R.id.toggle_pen:
+                if(penDown){
+                    item.setTitle("Lower Pen");
+                    penDown = false;
+                }else{
+                    polyline = new PolylineOptions()
+                            .width(25)
+                            .color(sharedPreferences.getInt(CHOSEN_COLOR, Color.BLUE));
+                    item.setTitle("Raise Pen");
+                    penDown = true;
+                }
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -270,7 +283,8 @@ public class  MapsActivity extends AppCompatActivity implements
 //            mMap.addMarker(options);
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
-            if(sharedPreferences.getBoolean(PREF_PEN_KEY, true)) {
+//            if(sharedPreferences.getBoolean(PREF_PEN_KEY, true)) {
+            if(penDown){
                 if(polyline == null){
                     polyline = new PolylineOptions()
                             .width(25)
