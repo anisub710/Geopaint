@@ -27,7 +27,6 @@ import java.io.PrintWriter;
 
 public class MapSavingService extends IntentService {
     private static final String TAG = "MapSaving";
-    private static final int WRITE_REQUEST_CODE = 1;
     private Handler mHandler;
 
 
@@ -49,22 +48,12 @@ public class MapSavingService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        Log.v(TAG, "Handling Intent");
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String saveFile = sharedPreferences.getString(MapsActivity.PREF_FILE_KEY, null) + ".geojson";
         String converted = intent.getStringExtra(MapsActivity.CONVERTED_KEY);
 
-//        Log.v(TAG, "Here is the converted GEOJSON: " + converted);
-//        Log.v(TAG, "Here is the file name " + saveFile);
-
         if(isExternalStorageWritable()){
             saveToExternalFile(saveFile, converted);
-//            int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-//            if(permissionCheck == PackageManager.PERMISSION_GRANTED){
-//            }else{
-//                //CHECK HOW TO DO THIS!!!!!
-////                ActivityCompat.requestPermissions(this , new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_REQUEST_CODE);
-//            }
         }
 
 

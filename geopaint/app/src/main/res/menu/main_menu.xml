@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item
-        android:id="@+id/action_settings"
-        android:title="Change File Name"
-        app:showAsAction="never"/>
 
     <item android:id="@+id/toggle_pen"
         android:title="Toggle Pen"
@@ -20,5 +16,10 @@
         app:showAsAction="ifRoom"
         app:actionProviderClass="android.support.v7.widget.ShareActionProvider"/>
 
+    <item
+        android:id="@+id/action_settings"
+        android:title="Change File Name"
+        app:showAsAction="never"/>
 
+    
 </menu>

@@ -59,6 +59,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.os.Build.VERSION_CODES.O;
+
 public class  MapsActivity extends AppCompatActivity implements
         OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
@@ -79,19 +81,16 @@ public class  MapsActivity extends AppCompatActivity implements
     private boolean penDown;
     private Polyline line;
     private List<PolylineOptions> resultList;
-//    private PolylineOptions old;
     public static final String PREF_PEN_KEY = "pref_pen";
     public static final String CHOSEN_COLOR = "chosen_color";
     public static final String PREF_FILE_KEY = "pref_file";
     public static final String CONVERTED_KEY = "converted";
-
+    private static final int WRITE_REQUEST_CODE = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
 
         polylineList = new ArrayList<Polyline>();
 
@@ -102,7 +101,6 @@ public class  MapsActivity extends AppCompatActivity implements
 
             if(!sharedPreferences.getBoolean(PREF_PEN_KEY, false)){
                 sharedPreferences.edit().putBoolean(PREF_PEN_KEY, false).commit();
-//                penDown = false; //Pen up initially
             }
 
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -124,7 +122,8 @@ public class  MapsActivity extends AppCompatActivity implements
                 }
             });
             builder.show();
-        }else{
+
+        }else{ //Attempt to load from file.
             Uri getFile = Uri.fromFile(new File(getExternalFilesDir(null).getAbsolutePath() +
                     File.separator + sharedPreferences.getString(PREF_FILE_KEY, null) + ".geojson"));
             File read = new File(getFile.getPath());
@@ -142,8 +141,6 @@ public class  MapsActivity extends AppCompatActivity implements
                     inputStream.close();
                     geojson = stringBuilder.toString();
                     resultList = converter.convertFromGeoJson(geojson);
-//                    old = resultList.get(0);
-//                    Log.v(TAG, "This is the geojson: " + resultList.get(0));
                 }
             }catch(FileNotFoundException e){
                 Log.d(TAG, "File not found: " + e.toString());
@@ -198,9 +195,6 @@ public class  MapsActivity extends AppCompatActivity implements
 
     @Override
     protected void onStart() {
-//        polyline = new PolylineOptions()
-//                .width(25)
-//                .color(sharedPreferences.getInt(CHOSEN_COLOR, Color.BLUE));
         mGoogleApiClient.connect();
         super.onStart();
     }
@@ -356,13 +350,9 @@ public class  MapsActivity extends AppCompatActivity implements
             double lat = location.getLatitude();
             double lng = location.getLongitude();
             LatLng latLng = new LatLng(lat, lng);
-//            MarkerOptions options = new MarkerOptions()
-//                    .position(latLng)
-//                    .title("Current Location");
-//            mMap.addMarker(options);
+
             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
 
-//            if(sharedPreferences.getBoolean(PREF_PEN_KEY, true)) {
             if(sharedPreferences.getBoolean(PREF_PEN_KEY, true)){
                 if(polyline == null){
                     polyline = new PolylineOptions()
@@ -378,9 +368,21 @@ public class  MapsActivity extends AppCompatActivity implements
                 String converted = converter.convertToGeoJson(polylineList);
                 Intent intent = new Intent(MapsActivity.this, MapSavingService.class);
                 intent.putExtra(CONVERTED_KEY, converted);
-                startService(intent);
+                if(checkStoragePermission()){
+                    startService(intent);
+                }else{
+                    ActivityCompat.requestPermissions(this , new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_REQUEST_CODE);
+                }
             }
         }
+    }
+
+    public boolean checkStoragePermission(){
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if(permissionCheck == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -389,6 +391,11 @@ public class  MapsActivity extends AppCompatActivity implements
             case LOCATION_REQUEST_CODE: {
                 if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                     onConnected(null);
+                }
+            }
+            case WRITE_REQUEST_CODE: {
+                if(grantResults.length >0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                    onLocationChanged(null);
                 }
             }
             default:
