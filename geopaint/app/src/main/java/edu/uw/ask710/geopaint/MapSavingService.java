@@ -44,8 +44,6 @@ public class MapSavingService extends IntentService {
 
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
-        Toast.makeText(this, "Intent received", Toast.LENGTH_SHORT).show();
-        Log.v(TAG, "Intent received");
         return super.onStartCommand(intent, flags, startId);
     }
 

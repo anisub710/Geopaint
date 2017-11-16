@@ -65,13 +65,6 @@ public class GeoJsonConverter {
         for(int i=0; i< featuresArray.length(); i++){
             JSONObject featureObj = featuresArray.getJSONObject(i);
 
-            //get LatLng coordinates
-            JSONArray coordinates = featureObj.getJSONObject("geometry").getJSONArray("coordinates");
-            JSONArray startCoord = coordinates.getJSONArray(0);
-            JSONArray endCoord = coordinates.getJSONArray(1);
-            LatLng start = new LatLng(startCoord.getDouble(1), startCoord.getDouble(0));
-            LatLng end = new LatLng(endCoord.getDouble(1), endCoord.getDouble(0));
-
             //get polyline properties
             JSONObject properties = featureObj.getJSONObject("properties");
             int color = properties.getInt("color");
@@ -79,10 +72,19 @@ public class GeoJsonConverter {
 
             //define the polyline
             PolylineOptions line = new PolylineOptions()
-                    .add(start)
-                    .add(end)
                     .color(color)
                     .width(width);
+
+            //get LatLng coordinates
+            JSONArray coordinates = featureObj.getJSONObject("geometry").getJSONArray("coordinates");
+
+            //iterate through coordinates and add them to polyline
+            for(int j = 0; j < coordinates.length(); j++) {
+                JSONArray currCoord = coordinates.getJSONArray(j);
+                LatLng curr = new LatLng(currCoord.getDouble(1), currCoord.getDouble(0));
+                line.add(curr);
+            }
+
             polyLineList.add(line);
         }
         return polyLineList;

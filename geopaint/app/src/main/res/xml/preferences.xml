@@ -11,18 +11,6 @@
     <EditTextPreference android:key="pref_file"
         android:title="File name to store the art"
     />
-    <!--add color and sharing-->
 
-    <!--<PreferenceCategory-->
-        <!--android:title="Color">-->
-        <com.flask.colorpicker.ColorPickerPreference
-            android:key="pref_color"
-            android:title="Pen Color"
-            app:alphaSlider="true"
-            app:density="12"
-            app:initialColor= "@color/colorDefault"
-            app:lightnessSlider="true"
-            />
-    <!--</PreferenceCategory>-->
 
 </PreferenceScreen>

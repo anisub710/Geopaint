@@ -10,6 +10,8 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.google.android.gms.maps.SupportMapFragment;
+
 /**
  * Created by Anirudh Subramanyam on 11/11/2017.
  */
@@ -51,24 +53,24 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             });
 
-            Preference colorPreference = (Preference) findPreference(PREF_COLOR);
-            colorPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    int v = (int) newValue;
-                    int A = (v >> 24) & 0xff; // or color >>> 24
-                    int R = (v >> 16) & 0xff;
-                    int G = (v >>  8) & 0xff;
-                    int B = (v      ) & 0xff;
-                    int co = Color.argb(A, R, G, B);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putInt("chosen_color", co);
-                    editor.commit();
-//                    Log.v(TAG, "this is the color: " + co );
-
-                    return true;
-                }
-            });
+//            Preference colorPreference = (Preference) findPreference(PREF_COLOR);
+//            colorPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+//                @Override
+//                public boolean onPreferenceChange(Preference preference, Object newValue) {
+//                    int v = (int) newValue;
+//                    int A = (v >> 24) & 0xff; // or color >>> 24
+//                    int R = (v >> 16) & 0xff;
+//                    int G = (v >>  8) & 0xff;
+//                    int B = (v      ) & 0xff;
+//                    int co = Color.argb(A, R, G, B);
+//                    SharedPreferences.Editor editor = sharedPreferences.edit();
+//                    editor.putInt("chosen_color", co);
+//                    editor.commit();
+////                    Log.v(TAG, "this is the color: " + co );
+//
+//                    return true;
+//                }
+//            });
 
         }
 

@@ -5,12 +5,20 @@
         android:id="@+id/action_settings"
         android:title="Settings"
         app:showAsAction="never"/>
+
+    <item android:id="@+id/toggle_pen"
+        android:title="Toggle Pen"
+        app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/choose_color"
+        android:title="Choose Color"
+        app:showAsAction="ifRoom"
+        />
+
     <item android:id="@+id/action_share"
         android:title="Share"
         app:showAsAction="ifRoom"
         app:actionProviderClass="android.support.v7.widget.ShareActionProvider"/>
 
-    <item android:id="@+id/toggle_pen"
-        android:title="Toggle Pen"
-        app:showAsAction="ifRoom"/>
+
 </menu>
