@@ -78,6 +78,7 @@ public class  MapsActivity extends AppCompatActivity implements
     private static final int LOCATION_REQUEST_CODE = 1;
     private String fileName;
     private String geojson;
+    private Intent intent;
     private boolean penDown;
     private Polyline line;
     private List<PolylineOptions> resultList;
@@ -366,24 +367,18 @@ public class  MapsActivity extends AppCompatActivity implements
                 }
                 polylineList.add(line);
                 String converted = converter.convertToGeoJson(polylineList);
-                Intent intent = new Intent(MapsActivity.this, MapSavingService.class);
+                intent = new Intent(MapsActivity.this, MapSavingService.class);
                 intent.putExtra(CONVERTED_KEY, converted);
-                if(checkStoragePermission()){
+//                int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+//                if(permissionCheck == PackageManager.PERMISSION_GRANTED) {
                     startService(intent);
-                }else{
-                    ActivityCompat.requestPermissions(this , new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_REQUEST_CODE);
-                }
+//                }else{
+//                    ActivityCompat.requestPermissions(this , new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_REQUEST_CODE);
+//                }
             }
         }
     }
 
-    public boolean checkStoragePermission(){
-        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if(permissionCheck == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        return false;
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -395,7 +390,7 @@ public class  MapsActivity extends AppCompatActivity implements
             }
             case WRITE_REQUEST_CODE: {
                 if(grantResults.length >0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                    onLocationChanged(null);
+                    onConnected(null);
                 }
             }
             default:

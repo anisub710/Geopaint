@@ -6,5 +6,5 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     map:mapType = "hybrid"
-    map:cameraZoom = "15"
+    map:cameraZoom = "18"
     tools:context="edu.uw.ask710.geopaint.MapsActivity" />
