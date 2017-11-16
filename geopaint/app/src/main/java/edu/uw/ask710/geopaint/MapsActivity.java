@@ -231,7 +231,26 @@ public class  MapsActivity extends AppCompatActivity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
             case R.id.action_settings:
-                startActivity(new Intent(MapsActivity.this, SettingsActivity.class));
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("Enter file name to store this art: ");
+                final EditText input = new EditText(this);
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                builder.setView(input);
+                builder.setPositiveButton("SAVE", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        fileName = input.getText().toString();
+                        sharedPreferences.edit().putString(PREF_FILE_KEY, fileName).commit();
+                    }
+                });
+                builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+                builder.show();
                 return true;
 
             case R.id.toggle_pen:
@@ -362,10 +381,6 @@ public class  MapsActivity extends AppCompatActivity implements
                 startService(intent);
             }
         }
-    }
-
-    public void draw(){
-
     }
 
     @Override
