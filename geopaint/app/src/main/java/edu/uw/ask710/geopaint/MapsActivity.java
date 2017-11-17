@@ -104,6 +104,7 @@ public class  MapsActivity extends AppCompatActivity implements
                 sharedPreferences.edit().putBoolean(PREF_PEN_KEY, false).commit();
             }
 
+            //ask for file name to save the file in.
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("Enter file name to store this art: ");
             final EditText input = new EditText(this);
@@ -124,7 +125,7 @@ public class  MapsActivity extends AppCompatActivity implements
             });
             builder.show();
 
-        }else{ //Attempt to load from file.
+        }else{ //Attempt to load from file for extra credit.
             Uri getFile = Uri.fromFile(new File(getExternalFilesDir(null).getAbsolutePath() +
                     File.separator + sharedPreferences.getString(PREF_FILE_KEY, null) + ".geojson"));
             File read = new File(getFile.getPath());
@@ -151,10 +152,6 @@ public class  MapsActivity extends AppCompatActivity implements
                 e.printStackTrace();
             }
         }
-
-
-
-
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         if(mGoogleApiClient == null){
@@ -186,7 +183,7 @@ public class  MapsActivity extends AppCompatActivity implements
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setZoomControlsEnabled(true);
-        if(resultList != null){
+        if(resultList != null){//for loading a file from the result list. Extra credit attempt.
             for(int i = 0; i < resultList.size(); i++){
                 PolylineOptions old = resultList.get(i);
                 mMap.addPolyline(old);
@@ -215,8 +212,9 @@ public class  MapsActivity extends AppCompatActivity implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
-            case R.id.action_settings:
+            case R.id.action_settings: //to change file name
 
+                //prompts to change file name
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setTitle("Enter file name to store this art: ");
                 final EditText input = new EditText(this);
@@ -238,15 +236,15 @@ public class  MapsActivity extends AppCompatActivity implements
                 builder.show();
                 return true;
 
-            case R.id.toggle_pen:
+            case R.id.toggle_pen: //change pen position
                 handleTogglePen(item);
                 return true;
 
-            case R.id.choose_color:
+            case R.id.choose_color: //change color
                 buildColorDialog();
                 return true;
 
-            case R.id.action_share:
+            case R.id.action_share: //share the file
                 MenuItem shareItem = item;
                 ShareActionProvider mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
                 Intent myShareIntent = new Intent(Intent.ACTION_SEND);
@@ -263,6 +261,7 @@ public class  MapsActivity extends AppCompatActivity implements
         }
     }
 
+    //Method to handle behavior after the toggle pen button is pressed on the menu.
     public void handleTogglePen(MenuItem item){
         if(item != null){
             if(sharedPreferences.getBoolean(PREF_PEN_KEY, true)){
@@ -278,6 +277,7 @@ public class  MapsActivity extends AppCompatActivity implements
         }
     }
 
+    //Builds color dialog to choose a color using the color picker library (reference in README)
     public void buildColorDialog(){
         ColorPickerDialogBuilder
                 .with(MapsActivity.this)
@@ -293,6 +293,7 @@ public class  MapsActivity extends AppCompatActivity implements
                 .setPositiveButton("ok", new ColorPickerClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int selectedColor, Integer[] allColors) {
+                        //convert to ARGB
                         int v = selectedColor;
                         int A = (v >> 24) & 0xff; // or color >>> 24
                         int R = (v >> 16) & 0xff;
@@ -320,6 +321,7 @@ public class  MapsActivity extends AppCompatActivity implements
                 .show();
     }
 
+    //Set interval for location request at 10 seconds, 5 seconds fastest
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.v(TAG, "Location services connected.");
@@ -328,7 +330,7 @@ public class  MapsActivity extends AppCompatActivity implements
         locationRequest.setFastestInterval(5000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-
+        //check permission to access location
         int locationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
         if(locationPermission == PackageManager.PERMISSION_GRANTED){
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, locationRequest, this);
@@ -347,6 +349,8 @@ public class  MapsActivity extends AppCompatActivity implements
 
     }
 
+    //moves camera when location is changed. Adds tracking line if pen is lowered and sends
+    //intent to MapSavingService to save the polylines to a file
     @Override
     public void onLocationChanged(Location location) {
         if(location != null){

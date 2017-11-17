@@ -25,6 +25,7 @@ import java.io.PrintWriter;
  * Created by Anirudh Subramanyam on 11/14/2017.
  */
 
+//Custom intent service to constantly save polylines to the file
 public class MapSavingService extends IntentService {
     private static final String TAG = "MapSaving";
     private Handler mHandler;
@@ -46,6 +47,7 @@ public class MapSavingService extends IntentService {
         return super.onStartCommand(intent, flags, startId);
     }
 
+    //gets intent and checks if writable on external storage.
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -59,6 +61,7 @@ public class MapSavingService extends IntentService {
 
     }
 
+    //saves polyline to file
     private void saveToExternalFile(String saveFile, String converted){
         try{
             File dir = getExternalFilesDir(null);
@@ -78,6 +81,7 @@ public class MapSavingService extends IntentService {
         }
     }
 
+    //checks if external storage is writable.
     public static boolean isExternalStorageWritable(){
         String state = Environment.getExternalStorageState();
         if(Environment.MEDIA_MOUNTED.equals(state)){
