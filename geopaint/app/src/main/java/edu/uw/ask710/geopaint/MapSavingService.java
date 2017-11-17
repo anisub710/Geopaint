@@ -66,9 +66,9 @@ public class MapSavingService extends IntentService {
                 dir.mkdirs();
             }
             File file = new File(dir, saveFile);
-            if(file.exists()){
-                file.delete();
-            }
+//            if(file.exists()){
+//                file.delete();
+//            }
             PrintWriter out = new PrintWriter(new FileWriter(file, true));
             out.println(converted);
             out.close();

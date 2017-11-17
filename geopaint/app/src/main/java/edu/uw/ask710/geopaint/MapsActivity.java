@@ -209,16 +209,6 @@ public class  MapsActivity extends AppCompatActivity implements
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-
-        MenuItem shareItem = menu.findItem(R.id.action_share);
-        ShareActionProvider mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
-        Intent myShareIntent = new Intent(Intent.ACTION_SEND);
-        myShareIntent.setType("text/plain");
-        File shareFile = new File(getExternalFilesDir(null).getAbsolutePath() +
-                File.separator + sharedPreferences.getString(PREF_FILE_KEY, null) + ".geojson");
-        Uri contentUri =  FileProvider.getUriForFile(getApplicationContext(), "edu.uw.ask710.geopaint.fileprovider", shareFile);
-        myShareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
-        mShareActionProvider.setShareIntent(myShareIntent);
         return true;
     }
 
@@ -254,6 +244,18 @@ public class  MapsActivity extends AppCompatActivity implements
 
             case R.id.choose_color:
                 buildColorDialog();
+                return true;
+
+            case R.id.action_share:
+                MenuItem shareItem = item;
+                ShareActionProvider mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
+                Intent myShareIntent = new Intent(Intent.ACTION_SEND);
+                myShareIntent.setType("text/plain");
+                File shareFile = new File(getExternalFilesDir(null).getAbsolutePath() +
+                        File.separator + sharedPreferences.getString(PREF_FILE_KEY, null) + ".geojson");
+                Uri contentUri =  FileProvider.getUriForFile(getApplicationContext(), "edu.uw.ask710.geopaint.fileprovider", shareFile);
+                myShareIntent.putExtra(Intent.EXTRA_STREAM, contentUri);
+                mShareActionProvider.setShareIntent(myShareIntent);
                 return true;
 
             default:
@@ -369,12 +371,12 @@ public class  MapsActivity extends AppCompatActivity implements
                 String converted = converter.convertToGeoJson(polylineList);
                 intent = new Intent(MapsActivity.this, MapSavingService.class);
                 intent.putExtra(CONVERTED_KEY, converted);
-//                int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-//                if(permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                if(permissionCheck == PackageManager.PERMISSION_GRANTED) {
                     startService(intent);
-//                }else{
-//                    ActivityCompat.requestPermissions(this , new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_REQUEST_CODE);
-//                }
+                }else{
+                    ActivityCompat.requestPermissions(this , new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, WRITE_REQUEST_CODE);
+                }
             }
         }
     }
